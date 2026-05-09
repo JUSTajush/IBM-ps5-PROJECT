@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PS5 Luxe Rentals &mdash; Premium Console Hire</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav class="nav" id="nav">
+    <div class="nav__inner">
+      <a href="#" class="nav__logo">&#9654; PS5LUXE</a>
+      <ul class="nav__links">
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#how">How It Works</a></li>
+        <li><a href="#book">Book Now</a></li>
+        <li><a href="#faq">FAQ</a></li>
+      </ul>
+      <div class="nav__auth" id="authControl">
+        <a href="/auth/login" class="btn btn--ghost nav__auth-btn" id="loginBtn">Login</a>
+        <a href="/auth/logout" class="btn btn--ghost nav__auth-btn hidden" id="logoutBtn">Logout</a>
+        <span class="auth-name" id="authName"></span>
+      </div>
+      <a href="#book" class="btn btn--gold nav__cta">Rent Now</a>
+      <button class="nav__hamburger" id="hamburger" aria-label="Toggle menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+    <ul class="nav__mobile" id="mobileMenu">
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#how">How It Works</a></li>
+      <li><a href="#book">Book Now</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero__bg"></div>
+    <div class="container hero__inner">
+      <div class="hero__text">
+        <p class="hero__eyebrow">Premium Console Rental</p>
+        <h1 class="hero__title">Play at the
+          <span class="gold">Highest Level.</span>
+          <br>Tonight.</h1>
+        <p class="hero__sub">Rent a PS5 by the hour with free home delivery. No commitment, just pure next-gen gaming — delivered to your door.</p>
+        <div class="hero__actions">
+          <a href="#book" class="btn btn--gold">Book Your Console Now</a>
+          <a href="#pricing" class="btn btn--ghost">See Pricing</a>
+        </div>
+        <div class="hero__stats">
+          <div class="stat"><span class="stat__num">500+</span><span class="stat__label">Happy Gamers</span></div>
+          <div class="stat"><span class="stat__num">24/7</span><span class="stat__label">Delivery Available</span></div>
+          <div class="stat"><span class="stat__num">4.9★</span><span class="stat__label">Average Rating</span></div>
+        </div>
+      </div>
+      <div class="hero__visual">
+        <div class="hero__console-wrap">
+          <div class="hero__glow"></div>
+          <div class="hero__console">
+            <div class="console-body">
+              <div class="console-disc"></div>
+              <div class="console-light"></div>
+            </div>
+            <div class="controller">
+              <div class="ctrl-body">
+                <div class="ctrl-touch"></div>
+                <div class="ctrl-btn ctrl-btn--x">✕</div>
+                <div class="ctrl-btn ctrl-btn--o">○</div>
+                <div class="ctrl-btn ctrl-btn--t">△</div>
+                <div class="ctrl-btn ctrl-btn--s">□</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="section" id="pricing">
+    <div class="container">
+      <p class="section__eyebrow">Transparent Pricing</p>
+      <h2 class="section__title">Choose Your Package</h2>
+      <p class="section__sub">All packages include delivery, setup support, and a curated game library.</p>
+      <div class="pricing-grid">
+
+        <div class="pricing-card">
+          <div class="pricing-card__badge">Standard</div>
+          <div class="pricing-card__price"><span class="price-num">₹199
+</span><span class="price-unit">/hr</span></div>
+          <ul class="pricing-card__features">
+            <li>&#10003; PS5 Console + 1 Controller</li>
+            <li>&#10003; 5 Digital Games Included</li>
+            <li>&#10003; Home Delivery (2-hr window)</li>
+            <li>&#10003; Basic Setup Support</li>
+            <li class="muted">&#x2715; 4K TV Package</li>
+            <li class="muted">&#x2715; Priority Slot</li>
+          </ul>
+          <a href="#book" class="btn btn--ghost btn--full" data-plan="Standard - ₹199/hr">Book Standard</a>
+        </div>
+
+        <div class="pricing-card pricing-card--featured">
+          <div class="pricing-card__ribbon">Most Popular</div>
+          <div class="pricing-card__badge gold">Pro</div>
+          <div class="pricing-card__price"><span class="price-num">₹499
+</span><span class="price-unit">/hr</span></div>
+          <ul class="pricing-card__features">
+            <li>&#10003; PS5 + 2 Controllers</li>
+            <li>&#10003; 15 Digital Games Included</li>
+            <li>&#10003; Home Delivery (1-hr window)</li>
+            <li>&#10003; Full Setup &amp; Onboarding</li>
+            <li>&#10003; PS Plus Access</li>
+            <li class="muted">&#x2715; 4K TV Package</li>
+          </ul>
+          <a href="#book" class="btn btn--gold btn--full" data-plan="Pro - ₹499/hr">Book Pro</a>
+        </div>
+
+        <div class="pricing-card">
+          <div class="pricing-card__badge">Elite</div>
+          <div class="pricing-card__price"><span class="price-num">₹999
+</span><span class="price-unit">/hr</span></div>
+          <ul class="pricing-card__features">
+            <li>&#10003; PS5 + 2 Controllers + Headset</li>
+            <li>&#10003; Full Game Library (50+)</li>
+            <li>&#10003; Express Delivery (&lt;30 min)</li>
+            <li>&#10003; Personal Setup Concierge</li>
+            <li>&#10003; PS Plus Access</li>
+            <li>&#10003; 4K OLED TV Package</li>
+          </ul>
+          <a href="#book" class="btn btn--ghost btn--full" data-plan="Elite - ₹999/hr">Book Elite</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section section--alt" id="how">
+    <div class="container">
+      <p class="section__eyebrow">Effortless Process</p>
+      <h2 class="section__title">How It Works</h2>
+      <div class="steps">
+        <div class="step">
+          <div class="step__icon">&#128196;</div>
+          <div class="step__num">01</div>
+          <h3 class="step__title">Choose a Package</h3>
+          <p class="step__desc">Pick Standard, Pro, or Elite based on how you want to play.</p>
+        </div>
+        <div class="step__connector"></div>
+        <div class="step">
+          <div class="step__icon">&#128336;</div>
+          <div class="step__num">02</div>
+          <h3 class="step__title">Set Your Hours</h3>
+          <p class="step__desc">Select your start time and how many hours you need. Pay only for what you use.</p>
+        </div>
+        <div class="step__connector"></div>
+        <div class="step">
+          <div class="step__icon">&#128666;</div>
+          <div class="step__num">03</div>
+          <h3 class="step__title">We Deliver &amp; Collect</h3>
+          <p class="step__desc">We bring the console to your door, set it up, and collect it when you&rsquo;re done.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOOKING FORM -->
+  <section class="section" id="book">
+    <div class="container">
+      <p class="section__eyebrow">Reserve Your Console</p>
+      <h2 class="section__title">Book Your PS5 Delivery</h2>
+      <div class="form-card">
+        <form id="bookingForm" novalidate>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="fname">Full Name <span class="req">*</span></label>
+              <input type="text" id="fname" name="fname" placeholder="anurag" required />
+              <span class="form-error" id="fnameErr"></span>
+            </div>
+            <div class="form-group">
+              <label for="phone">Phone Number <span class="req">*</span></label>
+              <input type="tel" id="phone" name="phone" placeholder="+91 000 000 0000" required />
+              <span class="form-error" id="phoneErr"></span>
+            </div>
+            <div class="form-group">
+              <label for="email">Email Address <span class="req">*</span></label>
+              <input type="email" id="email" name="email" placeholder="anurag@email.com" required />
+              <span class="form-error" id="emailErr"></span>
+            </div>
+            <div class="form-group">
+              <label for="plan">Package <span class="req">*</span></label>
+              <select id="plan" name="plan" required>
+                <option value="">Select a package</option>
+                <option value="Standard - ₹199/hr">Standard &mdash; ₹199/hr</option>
+                <option value="Pro - ₹499/hr">Pro &mdash; ₹499/hr</option>
+                <option value="Elite - ₹999/hr">Elite &mdash; ₹999/hr</option>
+              </select>
+              <span class="form-error" id="planErr"></span>
+            </div>
+            <div class="form-group form-group--full">
+              <label for="address">Delivery Address <span class="req">*</span></label>
+              <input type="text" id="address" name="address" placeholder="123 Main Street, City, State, ZIP" required />
+              <span class="form-error" id="addressErr"></span>
+            </div>
+            <div class="form-group">
+              <label for="date">Delivery Date <span class="req">*</span></label>
+              <input type="date" id="date" name="date" required />
+              <span class="form-error" id="dateErr"></span>
+            </div>
+            <div class="form-group">
+              <label for="time">Delivery Time <span class="req">*</span></label>
+              <input type="time" id="time" name="time" required />
+              <span class="form-error" id="timeErr"></span>
+            </div>
+            <div class="form-group">
+              <label for="hours">Rental Duration (Hours) <span class="req">*</span></label>
+              <select id="hours" name="hours" required>
+                <option value="">Select hours</option>
+                <option value="1">1 Hour</option>
+                <option value="2">2 Hours</option>
+                <option value="3">3 Hours</option>
+                <option value="4">4 Hours</option>
+                <option value="5">5 Hours</option>
+                <option value="6">6 Hours</option>
+                <option value="8">8 Hours</option>
+                <option value="12">12 Hours</option>
+                <option value="24">24 Hours (Full Day)</option>
+              </select>
+              <span class="form-error" id="hoursErr"></span>
+            </div>
+            <div class="form-group">
+              <label for="id">ID Number <span class="req">*</span></label>
+              <input type="text" id="id" name="id" placeholder="National ID / Passport No." required />
+              <span class="form-error" id="idErr"></span>
+            </div>
+            <div class="form-group form-group--full">
+              <label for="notes">Special Instructions</label>
+              <textarea id="notes" name="notes" rows="3" placeholder="Any special requests or access instructions for delivery..."></textarea>
+            </div>
+          </div>
+
+          <div class="cost-preview" id="costPreview" style="display:none">
+            <span class="cost-preview__label">Estimated Total</span>
+            <span class="cost-preview__amount" id="costAmount"></span>
+          </div>
+
+          <button type="submit" class="btn btn--gold btn--full btn--lg">Confirm Rental Booking</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- TESTIMONIALS -->
+  <section class="section section--alt" id="reviews">
+    <div class="container">
+      <p class="section__eyebrow">Real Reviews</p>
+      <h2 class="section__title">What Gamers Say</h2>
+      <div class="testimonials">
+        <div class="testimonial">
+          <div class="testimonial__stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="testimonial__text">&ldquo;Absolutely premium experience. Console arrived in 25 minutes, fully set up. The Elite package is worth every penny.&rdquo;</p>
+          <div class="testimonial__author">
+            <div class="testimonial__avatar">AK</div>
+            <div>
+              <strong>Anurag Kumar</strong>
+              <span>Elite Package</span>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial">
+          <div class="testimonial__stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="testimonial__text">&ldquo;Rented for a birthday party. Two controllers, massive game library. Everyone had a blast. Will definitely use again!&rdquo;</p>
+          <div class="testimonial__author">
+            <div class="testimonial__avatar">SM</div>
+            <div>
+              <strong>Sahil Malik</strong>
+              <span>Pro Package</span>
+            </div>
+          </div>
+        </div>
+        <div class="testimonial">
+          <div class="testimonial__stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+          <p class="testimonial__text">&ldquo;Super smooth booking process. The team was professional and the console was in perfect condition. 10/10.&rdquo;</p>
+          <div class="testimonial__author">
+            <div class="testimonial__avatar">JR</div>
+            <div>
+              <strong>Zara Khan</strong>
+              <span>Standard Package</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="section" id="faq">
+    <div class="container">
+      <p class="section__eyebrow">Got Questions?</p>
+      <h2 class="section__title">FAQ</h2>
+      <div class="faqs">
+        <div class="faq" data-open="false">
+          <button class="faq__q">How far in advance do I need to book? <span class="faq__icon">+</span></button>
+          <div class="faq__a">You can book as little as 2 hours in advance for Standard and Pro packages. Elite express delivery can be booked 30 minutes ahead.</div>
+        </div>
+        <div class="faq" data-open="false">
+          <button class="faq__q">What if the console has a problem during my rental? <span class="faq__icon">+</span></button>
+          <div class="faq__a">Call our support line immediately. We will dispatch a replacement console within 1 hour at no extra charge.</div>
+        </div>
+        <div class="faq" data-open="false">
+          <button class="faq__q">Can I extend my rental once it starts? <span class="faq__icon">+</span></button>
+          <div class="faq__a">Yes! Simply call or text us and we will extend at your current hourly rate, subject to availability.</div>
+        </div>
+        <div class="faq" data-open="false">
+          <button class="faq__q">Is a deposit required? <span class="faq__icon">+</span></button>
+          <div class="faq__a">A refundable security deposit of ₹5000 is collected at delivery and returned upon collection of the console in good condition.</div>
+        </div>
+        <div class="faq" data-open="false">
+          <button class="faq__q">What payment methods do you accept? <span class="faq__icon">+</span></button>
+          <div class="faq__a">We accept cash, credit/debit cards, Apple Pay, and Google Pay at the door.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="container footer__inner">
+      <div class="footer__brand">
+        <a href="#" class="nav__logo">&#9654; PS5LUXE</a>
+        <p>Next-gen gaming delivered to your door. Premium rentals, every time.</p>
+      </div>
+      <div class="footer__links">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="#pricing">Pricing</a></li>
+          <li><a href="#how">How It Works</a></li>
+          <li><a href="#book">Book Now</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer__contact">
+        <h4>Contact Us</h4>
+        <p>&#128222; +91 99050XXXX</p>
+        <p>&#9993; GAMAA@gmail.com</p>
+        <p>&#128337; Mon &ndash; Sun, 8am &ndash; 2am</p>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <p>&copy; 2026 PS5Luxe Rentals. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- SUCCESS MODAL -->
+  <div class="modal" id="successModal">
+    <div class="modal__box">
+      <div class="modal__icon">&#10003;</div>
+      <h2>Booking Confirmed!</h2>
+      <p id="modalSummary"></p>
+      <p class="modal__note">We&rsquo;ll call you to confirm delivery. Please have your ID and deposit ready.</p>
+      <button class="btn btn--gold" id="modalClose">Done</button>
+    </div>
+  </div>
+  <script>
+  window.watsonAssistantChatOptions = {
+    integrationID: "49cc3ee4-ee04-4a29-a5ad-a5fb73d04161", // The ID of this integration.
+    region: "https://integrations.au-syd.assistant.watson.appdomain.cloud", // The region your integration is hosted in.
+    serviceInstanceID: "08447e03-149d-48ac-acec-cb63e5018dc4", // The ID of your service instance.
+    onLoad: async (instance) => { await instance.render(); }
+  };
+  setTimeout(function(){
+    const t=document.createElement('script');
+    t.src="https://web-chat.global.assistant.watson.appdomain.cloud/versions/" + (window.watsonAssistantChatOptions.clientVersion || 'latest') + "/WatsonAssistantChatEntry.js";
+    document.head.appendChild(t);
+  });
+</script>
+  <script src="script.js"></script>
+</body>
+</html>

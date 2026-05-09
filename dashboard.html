@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - PS5 Luxe Rentals</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        .welcome-card {
+            background: #1a1a2e;
+            border: 1px solid #ffd700;
+            border-radius: 8px;
+            padding: 30px;
+            margin-bottom: 30px;
+            color: white;
+        }
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .user-details h2 {
+            color: #ffd700;
+            margin: 0 0 10px 0;
+        }
+        .logout-btn {
+            background: #ffd700;
+            color: #000;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .logout-btn:hover {
+            background: #ffed4e;
+        }
+        .bookings-section {
+            margin-top: 40px;
+        }
+        .bookings-section h3 {
+            color: #ffd700;
+            margin-bottom: 20px;
+        }
+        .booking-item {
+            background: #1a1a2e;
+            border-left: 4px solid #ffd700;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav__inner">
+            <a href="/" class="nav__logo">♔ PS5LUXE</a>
+            <div class="nav__auth">
+                <span class="auth-name" id="userName"></span>
+                <a href="/auth/logout" class="btn btn--ghost nav__auth-btn">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="welcome-card">
+            <div class="user-info">
+                <div class="user-details">
+                    <h2 id="welcomeName">Welcome!</h2>
+                    <p id="userEmail"></p>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <a href="/" class="logout-btn" style="background: #666; text-decoration: none;">Back to Home</a>
+                    <a href="/auth/logout" class="logout-btn">Sign Out</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="bookings-section">
+            <h3>Your Bookings</h3>
+            <div id="bookingsContainer">
+                <p style="color: #999;">No bookings yet. <a href="/" style="color: #ffd700;">Book a console</a></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadUserData() {
+            try {
+                const response = await fetch('/api/user');
+                if (!response.ok) throw new Error('Not authenticated');
+
+                const user = await response.json();
+                document.getElementById('welcomeName').textContent = `Welcome, ${user.name || 'User'}!`;
+                document.getElementById('userEmail').textContent = user.email || '';
+                document.getElementById('userName').textContent = user.name || 'User';
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                window.location.href = '/auth/login';
+            }
+        }
+
+        loadUserData();
+    </script>
+</body>
+</html>
