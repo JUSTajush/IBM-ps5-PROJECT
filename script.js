@@ -134,7 +134,7 @@ function validateForm() {
   return valid;
 }
 
-bookingForm.addEventListener('submit', (e) => {
+bookingForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   // Check if user is authenticated
@@ -147,11 +147,15 @@ bookingForm.addEventListener('submit', (e) => {
   if (!validateForm()) return;
 
   const fname   = document.getElementById('fname').value.trim();
+  const email   = document.getElementById('email').value.trim();
+  const phone   = document.getElementById('phone').value.trim();
   const plan    = document.getElementById('plan').value;
   const address = document.getElementById('address').value.trim();
   const date    = document.getElementById('date').value;
   const time    = document.getElementById('time').value;
   const hours   = document.getElementById('hours').value;
+  const idNo    = document.getElementById('id').value.trim();
+  const notes   = document.getElementById('notes').value.trim();
 
   const pricePerHr = prices[plan] || 0;
   const total = pricePerHr * parseInt(hours);
@@ -166,14 +170,44 @@ bookingForm.addEventListener('submit', (e) => {
   const hr = parseInt(h);
   const formattedTime = (hr > 12 ? hr - 12 : hr || 12) + ':' + m + (hr >= 12 ? ' PM' : ' AM');
 
-  modalSummary.innerHTML =
-    `Hi <strong>${fname}</strong>! Your <strong>${plan}</strong> rental has been booked.<br>` +
-    `Delivery to <em>${address}</em> on <strong>${formattedDate}</strong> at <strong>${formattedTime}</strong>.<br>` +
-    `Duration: <strong>${hours} hour${hours > 1 ? 's' : ''}</strong> &mdash; Estimated Total: <strong style="color:#C9A24A">₹${total.toFixed(2)}</strong>`;
+  const submitBtn = bookingForm.querySelector('button[type="submit"]');
+  const originalText = submitBtn.textContent;
+  submitBtn.textContent = 'Processing...';
+  submitBtn.disabled = true;
 
-  modal.classList.add('open');
-  bookingForm.reset();
-  costPreview.style.display = 'none';
+  try {
+    const response = await fetch('/api/bookings', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        customerName: fname,
+        email: email,
+        phone: phone,
+        serviceType: plan,
+        bookingDate: date,
+        bookingTime: time,
+        duration: hours,
+        notes: `Address: ${address} | ID: ${idNo} | Notes: ${notes}`
+      })
+    });
+
+    if (!response.ok) throw new Error('Failed to save booking');
+
+    modalSummary.innerHTML =
+      `Hi <strong>${fname}</strong>! Your <strong>${plan}</strong> rental has been booked.<br>` +
+      `Delivery to <em>${address}</em> on <strong>${formattedDate}</strong> at <strong>${formattedTime}</strong>.<br>` +
+      `Duration: <strong>${hours} hour${hours > 1 ? 's' : ''}</strong> &mdash; Estimated Total: <strong style="color:#C9A24A">₹${total.toFixed(2)}</strong>`;
+
+    modal.classList.add('open');
+    bookingForm.reset();
+    costPreview.style.display = 'none';
+  } catch (err) {
+    console.error(err);
+    alert('There was an error saving your booking. Please try again.');
+  } finally {
+    submitBtn.textContent = originalText;
+    submitBtn.disabled = false;
+  }
 });
 
 /* --- CLOSE MODAL --- */

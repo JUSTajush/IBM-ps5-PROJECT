@@ -1,0 +1,531 @@
+<!-- Booking Management Example -->
+<!-- Add this to your dashboard.html or create a new bookings.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Booking Management</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .user-info {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+
+    .logout-btn {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .logout-btn:hover {
+      background: #c0392b;
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    .form-section, .bookings-section {
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #333;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 8px;
+      color: #555;
+      font-weight: 600;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    button {
+      background: #667eea;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      width: 100%;
+    }
+
+    button:hover {
+      background: #5568d3;
+    }
+
+    button:active {
+      transform: scale(0.98);
+    }
+
+    .booking-card {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 15px;
+      border-left: 4px solid #667eea;
+    }
+
+    .booking-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 15px;
+    }
+
+    .booking-title {
+      font-weight: 600;
+      color: #333;
+      font-size: 16px;
+    }
+
+    .status-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-confirmed {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-completed {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+
+    .status-cancelled {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .booking-details {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 15px;
+      font-size: 14px;
+    }
+
+    .detail-item {
+      color: #666;
+    }
+
+    .detail-label {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .booking-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .btn-small {
+      padding: 8px 16px;
+      font-size: 13px;
+      width: auto;
+      flex: 1;
+    }
+
+    .btn-delete {
+      background: #e74c3c;
+    }
+
+    .btn-delete:hover {
+      background: #c0392b;
+    }
+
+    .btn-confirm {
+      background: #27ae60;
+    }
+
+    .btn-confirm:hover {
+      background: #229954;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: #999;
+      padding: 40px 20px;
+    }
+
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      border: 1px solid #c3e6cb;
+    }
+
+    .error-message {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 15px;
+      border-radius: 4px;
+      margin-bottom: 20px;
+      border: 1px solid #f5c6cb;
+    }
+
+    .loading {
+      text-align: center;
+      color: #667eea;
+      padding: 20px;
+    }
+
+    @media (max-width: 768px) {
+      .content {
+        grid-template-columns: 1fr;
+      }
+
+      header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+      }
+
+      .booking-details {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>📅 Booking Management</h1>
+      <div class="user-info">
+        <div id="userDisplay"></div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- Booking Form -->
+      <div class="form-section">
+        <h2>Create New Booking</h2>
+        <div id="formMessage"></div>
+        <form id="bookingForm" onsubmit="createBooking(event)">
+          <div class="form-group">
+            <label for="customerName">Full Name *</label>
+            <input type="text" id="customerName" required>
+          </div>
+
+          <div class="form-group">
+            <label for="email">Email *</label>
+            <input type="email" id="email" required>
+          </div>
+
+          <div class="form-group">
+            <label for="phone">Phone Number *</label>
+            <input type="tel" id="phone" required>
+          </div>
+
+          <div class="form-group">
+            <label for="serviceType">Service Type *</label>
+            <select id="serviceType" required>
+              <option value="">Select a service</option>
+              <option value="Consultation">Consultation</option>
+              <option value="Meeting">Meeting</option>
+              <option value="Support">Support</option>
+              <option value="Training">Training</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="bookingDate">Date *</label>
+            <input type="date" id="bookingDate" required>
+          </div>
+
+          <div class="form-group">
+            <label for="bookingTime">Time *</label>
+            <input type="time" id="bookingTime" required>
+          </div>
+
+          <div class="form-group">
+            <label for="duration">Duration (minutes) *</label>
+            <input type="number" id="duration" min="15" step="15" value="60" required>
+          </div>
+
+          <div class="form-group">
+            <label for="notes">Notes</label>
+            <textarea id="notes" rows="3" placeholder="Any special requests or notes..."></textarea>
+          </div>
+
+          <button type="submit">Create Booking</button>
+        </form>
+      </div>
+
+      <!-- Bookings List -->
+      <div class="bookings-section">
+        <h2>Your Bookings</h2>
+        <div id="bookingsList" class="loading">Loading bookings...</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Get current user
+    async function loadUserInfo() {
+      try {
+        const response = await fetch('/api/user');
+        if (response.status === 401) {
+          window.location.href = '/';
+          return;
+        }
+        const user = await response.json();
+        document.getElementById('userDisplay').innerHTML = `
+          <div>
+            <strong>${user.name || user.email}</strong><br>
+            <small>${user.email}</small>
+          </div>
+        `;
+      } catch (err) {
+        console.error('Error loading user:', err);
+      }
+    }
+
+    // Load bookings
+    async function loadBookings() {
+      try {
+        const response = await fetch('/api/bookings');
+        if (!response.ok) throw new Error('Failed to load bookings');
+
+        const bookings = await response.json();
+        displayBookings(bookings);
+      } catch (err) {
+        console.error('Error loading bookings:', err);
+        document.getElementById('bookingsList').innerHTML = `
+          <div class="error-message">Error loading bookings: ${err.message}</div>
+        `;
+      }
+    }
+
+    // Display bookings
+    function displayBookings(bookings) {
+      const container = document.getElementById('bookingsList');
+
+      if (!bookings || bookings.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <p>No bookings yet</p>
+            <small>Create your first booking using the form on the left</small>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = bookings.map(booking => `
+        <div class="booking-card">
+          <div class="booking-header">
+            <div class="booking-title">${booking.customerName}</div>
+            <span class="status-badge status-${booking.status.toLowerCase()}">
+              ${booking.status}
+            </span>
+          </div>
+
+          <div class="booking-details">
+            <div class="detail-item">
+              <div class="detail-label">Service</div>
+              ${booking.serviceType}
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Date & Time</div>
+              ${booking.bookingDate} at ${booking.bookingTime}
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Duration</div>
+              ${booking.duration} minutes
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Contact</div>
+              <a href="mailto:${booking.email}">${booking.email}</a>
+            </div>
+          </div>
+
+          <div class="booking-actions">
+            ${booking.status === 'pending' ? `
+              <button class="btn-small btn-confirm" 
+                      onclick="updateBookingStatus('${booking._id}', 'confirmed')">
+                Confirm
+              </button>
+            ` : ''}
+            ${booking.status !== 'completed' && booking.status !== 'cancelled' ? `
+              <button class="btn-small btn-delete" 
+                      onclick="deleteBooking('${booking._id}')">
+                Cancel
+              </button>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Create booking
+    async function createBooking(event) {
+      event.preventDefault();
+
+      const booking = {
+        customerName: document.getElementById('customerName').value,
+        email: document.getElementById('email').value,
+        phone: document.getElementById('phone').value,
+        serviceType: document.getElementById('serviceType').value,
+        bookingDate: document.getElementById('bookingDate').value,
+        bookingTime: document.getElementById('bookingTime').value,
+        duration: document.getElementById('duration').value,
+        notes: document.getElementById('notes').value,
+      };
+
+      try {
+        const response = await fetch('/api/bookings', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(booking),
+        });
+
+        if (!response.ok) throw new Error('Failed to create booking');
+
+        const result = await response.json();
+        showFormMessage('Booking created successfully!', 'success');
+        document.getElementById('bookingForm').reset();
+        loadBookings();
+      } catch (err) {
+        showFormMessage(`Error: ${err.message}`, 'error');
+      }
+    }
+
+    // Update booking status
+    async function updateBookingStatus(bookingId, status) {
+      try {
+        const response = await fetch(`/api/bookings/${bookingId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status }),
+        });
+
+        if (!response.ok) throw new Error('Failed to update booking');
+
+        loadBookings();
+      } catch (err) {
+        alert(`Error: ${err.message}`);
+      }
+    }
+
+    // Delete booking
+    async function deleteBooking(bookingId) {
+      if (!confirm('Are you sure you want to cancel this booking?')) return;
+
+      try {
+        const response = await fetch(`/api/bookings/${bookingId}`, {
+          method: 'DELETE',
+        });
+
+        if (!response.ok) throw new Error('Failed to delete booking');
+
+        loadBookings();
+      } catch (err) {
+        alert(`Error: ${err.message}`);
+      }
+    }
+
+    // Show form message
+    function showFormMessage(message, type) {
+      const container = document.getElementById('formMessage');
+      container.innerHTML = `<div class="${type}-message">${message}</div>`;
+      setTimeout(() => {
+        container.innerHTML = '';
+      }, 5000);
+    }
+
+    // Logout
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        window.location.href = '/auth/logout';
+      }
+    }
+
+    // Initialize on page load
+    window.addEventListener('load', () => {
+      loadUserInfo();
+      loadBookings();
+    });
+
+    // Auto-refresh bookings every 30 seconds
+    setInterval(loadBookings, 30000);
+  </script>
+</body>
+</html>
