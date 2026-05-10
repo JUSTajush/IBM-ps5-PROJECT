@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Portal - PS5 Luxe</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 20px;
+            background: #1a1a2e;
+            border: 1px solid #C9A24A;
+            border-radius: 8px;
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            color: #fff;
+            margin-top: 20px;
+        }
+        .admin-table th, .admin-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #333;
+        }
+        .admin-table th {
+            color: #C9A24A;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .badge.pending { background: #f39c12; color: #000; }
+        .badge.confirmed { background: #27ae60; color: #fff; }
+        .badge.completed { background: #2980b9; color: #fff; }
+        .badge.cancelled { background: #c0392b; color: #fff; }
+        
+        .action-btn {
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 5px;
+            font-size: 12px;
+        }
+        .action-btn:hover { background: #555; }
+        
+        /* Custom Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(2px);
+        }
+        .custom-modal {
+            background: #1a1a2e;
+            border: 1px solid #C9A24A;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 400px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        .modal-btn {
+            padding: 8px 16px; border: none; border-radius: 4px;
+            cursor: pointer; font-weight: bold; font-size: 13px; text-transform: uppercase;
+        }
+        .cancel-btn { background: #666; color: white; }
+        .cancel-btn:hover { background: #888; }
+        
+        /* Filter Buttons */
+        .admin-filters {
+            display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: #333; color: #fff; border: 1px solid #555;
+            padding: 8px 16px; border-radius: 20px; cursor: pointer;
+            font-size: 13px; font-weight: bold; transition: 0.2s;
+        }
+        .filter-btn:hover { background: #444; }
+        .filter-btn.active {
+            background: #C9A24A; color: #000; border-color: #C9A24A;
+        }
+    </style>
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav__inner">
+            <a href="/" class="nav__logo">&#9654; PS5LUXE ADMIN</a>
+            <div class="nav__auth">
+                <a href="/dashboard" class="btn btn--ghost nav__auth-btn">User Dashboard</a>
+                <a href="/auth/logout" class="btn btn--gold nav__auth-btn">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="admin-container" style="margin-top: 100px;">
+        <h2 style="color: #fff;">Customer Bookings</h2>
+        <p style="color: #aaa;">Manage all incoming PS5 rental requests here.</p>
+        
+        <div class="admin-filters">
+            <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+            <button class="filter-btn" onclick="setFilter('pending', this)">Pending</button>
+            <button class="filter-btn" onclick="setFilter('confirmed', this)">Confirmed</button>
+            <button class="filter-btn" onclick="setFilter('completed', this)">Completed</button>
+            <button class="filter-btn" onclick="setFilter('cancelled', this)">Cancelled</button>
+        </div>
+
+        <table class="admin-table">
+            <thead>
+                <tr>
+                    <th>Customer Details</th>
+                    <th>Package & Duration</th>
+                    <th>Delivery Date/Time</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="adminTableBody">
+                <tr><td colspan="5">Loading bookings...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Custom Confirm Modal -->
+    <div id="adminModal" class="modal-overlay" style="display: none;">
+        <div class="custom-modal">
+            <h3 id="adminModalTitle" style="margin-top: 0;">Update Booking</h3>
+            <p id="adminModalText">Are you sure you want to update this booking?</p>
+            <div class="modal-buttons">
+                <button class="modal-btn cancel-btn" onclick="closeAdminModal()">Go Back</button>
+                <button id="adminModalConfirmBtn" class="modal-btn" onclick="executeAdminAction()">Yes, Update</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allBookingsData = [];
+        let currentFilter = 'all';
+
+        async function loadAllBookings() {
+            try {
+                const response = await fetch('/api/bookings/all');
+                if (!response.ok) throw new Error('Failed to load bookings');
+                const bookings = await response.json();
+                
+                // Sort bookings by newest created first (fallback to booking date)
+                bookings.sort((a, b) => {
+                    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : new Date(`${a.bookingDate}T${a.bookingTime}`).getTime();
+                    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : new Date(`${b.bookingDate}T${b.bookingTime}`).getTime();
+                    return timeB - timeA;
+                });
+                
+                allBookingsData = bookings;
+                renderBookings();
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('adminTableBody').innerHTML = '<tr><td colspan="5" style="color: #ff4444;">Error loading bookings. Check if you have Admin access.</td></tr>';
+            }
+        }
+
+        function setFilter(status, btnElement) {
+            currentFilter = status;
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            btnElement.classList.add('active');
+            renderBookings();
+        }
+
+        function renderBookings() {
+            const tbody = document.getElementById('adminTableBody');
+            const filteredBookings = currentFilter === 'all' 
+                ? allBookingsData 
+                : allBookingsData.filter(b => (b.status || 'pending') === currentFilter);
+            
+            if (filteredBookings.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5">No bookings found for this status.</td></tr>';
+                return;
+            }
+                
+            tbody.innerHTML = filteredBookings.map(b => `
+                    <tr>
+                        <td>
+                            <strong>${b.customerName}</strong><br>
+                            <span style="color: #aaa; font-size: 13px;">${b.phone} | ${b.email}</span>
+                        </td>
+                        <td>
+                            <strong>${b.serviceType}</strong><br>
+                            <span style="color: #aaa; font-size: 13px;">${b.duration} Hours</span>
+                        </td>
+                        <td>
+                            <strong>${b.bookingDate}</strong><br>
+                            <span style="color: #aaa; font-size: 13px;">${b.bookingTime}</span>
+                        </td>
+                        <td>
+                            <span class="badge ${b.status || 'pending'}">${b.status || 'pending'}</span>
+                        </td>
+                        <td>
+                            ${b.status === 'pending' ? `<button class="action-btn" onclick="updateStatus('${b._id}', 'confirmed')">Confirm</button>` : ''}
+                            ${b.status === 'confirmed' ? `<button class="action-btn" onclick="updateStatus('${b._id}', 'completed')">Complete</button>` : ''}
+                            ${b.status !== 'cancelled' && b.status !== 'completed' ? `<button class="action-btn" onclick="updateStatus('${b._id}', 'cancelled')">Cancel</button>` : ''}
+                        </td>
+                    </tr>
+                `).join('');
+        }
+
+        let currentActionId = null;
+        let currentActionStatus = null;
+
+        function updateStatus(id, newStatus) {
+            currentActionId = id;
+            currentActionStatus = newStatus;
+            
+            const titleEl = document.getElementById('adminModalTitle');
+            const textEl = document.getElementById('adminModalText');
+            const confirmBtn = document.getElementById('adminModalConfirmBtn');
+            
+            if (newStatus === 'cancelled') {
+                titleEl.textContent = 'Cancel Booking';
+                titleEl.style.color = '#c0392b';
+                textEl.innerHTML = 'Are you sure you want to <strong>cancel</strong> this customer booking?';
+                confirmBtn.style.background = '#c0392b'; confirmBtn.style.color = 'white';
+            } else if (newStatus === 'confirmed') {
+                titleEl.textContent = 'Confirm Booking';
+                titleEl.style.color = '#27ae60';
+                textEl.innerHTML = 'Are you sure you want to mark this booking as <strong>confirmed</strong>?';
+                confirmBtn.style.background = '#27ae60'; confirmBtn.style.color = 'white';
+            } else if (newStatus === 'completed') {
+                titleEl.textContent = 'Complete Booking';
+                titleEl.style.color = '#2980b9';
+                textEl.innerHTML = 'Are you sure you want to mark this booking as <strong>completed</strong>?';
+                confirmBtn.style.background = '#2980b9'; confirmBtn.style.color = 'white';
+            }
+
+            document.getElementById('adminModal').style.display = 'flex';
+        }
+
+        function closeAdminModal() {
+            currentActionId = null;
+            currentActionStatus = null;
+            document.getElementById('adminModal').style.display = 'none';
+        }
+
+        async function executeAdminAction() {
+            if (!currentActionId || !currentActionStatus) return;
+            
+            try {
+                const response = await fetch(`/api/bookings/${currentActionId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: currentActionStatus })
+                });
+                
+                if (!response.ok) throw new Error('Update failed');
+                closeAdminModal();
+                loadAllBookings(); // Refresh the list
+            } catch (error) {
+                alert('Error updating status: ' + error.message);
+                closeAdminModal();
+            }
+        }
+
+        loadAllBookings();
+    </script>
+</body>
+</html>

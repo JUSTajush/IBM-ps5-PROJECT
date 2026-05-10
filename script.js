@@ -219,6 +219,7 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape') modal.clas
 const loginBtn = document.getElementById('loginBtn');
 const logoutBtn = document.getElementById('logoutBtn');
 const authName = document.getElementById('authName');
+const dashboardBtn = document.getElementById('dashboardBtn');
 
 async function refreshAuthState() {
   try {
@@ -235,15 +236,32 @@ async function refreshAuthState() {
     if (authenticated) {
       loginBtn?.classList.add('hidden');
       logoutBtn?.classList.remove('hidden');
+      if (dashboardBtn) {
+        dashboardBtn.classList.remove('hidden');
+        if (data.user?.email === 'gamaa.rental@gmail.com') {
+          dashboardBtn.href = '/admin';
+          dashboardBtn.textContent = 'Admin Portal';
+          dashboardBtn.classList.add('btn--gold');
+          dashboardBtn.classList.remove('btn--ghost');
+        }
+      }
       authName && (authName.textContent = `Logged in as ${data.user?.name || data.user?.email || 'user'}`);
+      
+      // Auto-fill booking form details
+      const fnameInput = document.getElementById('fname');
+      const emailInput = document.getElementById('email');
+      if (fnameInput && !fnameInput.value) fnameInput.value = data.user?.name || '';
+      if (emailInput && !emailInput.value) emailInput.value = data.user?.email || '';
     } else {
       loginBtn?.classList.remove('hidden');
       logoutBtn?.classList.add('hidden');
+      dashboardBtn?.classList.add('hidden');
       authName && (authName.textContent = '');
     }
   } catch (err) {
     loginBtn?.classList.remove('hidden');
     logoutBtn?.classList.add('hidden');
+    dashboardBtn?.classList.add('hidden');
     authName && (authName.textContent = '');
   }
 }

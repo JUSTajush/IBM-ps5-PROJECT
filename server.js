@@ -5,8 +5,18 @@ const passport = require('passport');
 const OAuth2Strategy = require('passport-oauth2');
 const axios = require('axios');
 const cloudant = require('./cloudant');
+const nodemailer = require('nodemailer');
 
 const app = express();
+
+// Configure Nodemailer
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
 
 // Middleware
 app.use(express.static('.'));
@@ -72,10 +82,18 @@ app.get('/auth/login', passport.authenticate('oauth2', {
   scope: ['openid', 'profile', 'email']
 }));
 
-app.get('/auth/callback', passport.authenticate('oauth2', {
-  successRedirect: '/dashboard',
-  failureRedirect: '/'
-}));
+app.get('/auth/callback', (req, res, next) => {
+  passport.authenticate('oauth2', (err, user, info) => {
+    if (err || !user) return res.redirect('/');
+    req.logIn(user, (err) => {
+      if (err) return next(err);
+      if (user.email === 'gamaa.rental@gmail.com') {
+        return res.redirect('/admin');
+      }
+      return res.redirect('/dashboard');
+    });
+  })(req, res, next);
+});
 
 app.get('/api/user', (req, res) => {
   if (!req.isAuthenticated()) {
@@ -104,6 +122,14 @@ app.get('/dashboard', (req, res) => {
     return res.redirect('/');
   }
   res.sendFile(__dirname + '/dashboard.html');
+});
+
+// Admin Portal Route
+app.get('/admin', (req, res) => {
+  if (!req.isAuthenticated()) {
+    return res.redirect('/');
+  }
+  res.sendFile(__dirname + '/admin.html');
 });
 
 app.get('/auth/logout', (req, res) => {
@@ -135,6 +161,54 @@ app.post('/api/bookings', async (req, res) => {
     };
 
     const result = await cloudant.createBooking(booking);
+    
+    // --- Send Email Notifications ---
+    try {
+      // 1. Email to Customer
+      const customerMailOptions = {
+        from: `"PS5 Luxe Rentals" <${process.env.EMAIL_USER}>`,
+        to: booking.email,
+        subject: 'Booking Confirmed - PS5 Luxe Rentals',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+            <h2 style="color: #C9A24A;">Booking Received!</h2>
+            <p>Hi <strong>${booking.customerName}</strong>,</p>
+            <p>Thank you for choosing PS5 Luxe Rentals. Your booking request has been received and is currently <strong>PENDING</strong> confirmation.</p>
+            <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+              <p><strong>Package:</strong> ${booking.serviceType}</p>
+              <p><strong>Delivery Date:</strong> ${booking.bookingDate} at ${booking.bookingTime}</p>
+              <p><strong>Duration:</strong> ${booking.duration} Hours</p>
+            </div>
+            <p>We will contact you shortly to confirm the delivery details. You can check your status anytime on your <a href="http://localhost:8000/dashboard" style="color: #C9A24A;">Dashboard</a>.</p>
+            <p>Best regards,<br><strong>PS5 Luxe Rentals Team</strong></p>
+          </div>
+        `
+      };
+
+      // 2. Email to Admin
+      const adminMailOptions = {
+        from: `"PS5 Luxe System" <${process.env.EMAIL_USER}>`,
+        to: process.env.EMAIL_USER,
+        subject: '🚨 NEW BOOKING: ' + booking.serviceType,
+        html: `
+          <div style="font-family: Arial, sans-serif;">
+            <h2 style="color: #c0392b;">New Booking Alert!</h2>
+            <p><strong>Customer:</strong> ${booking.customerName} (${booking.phone})</p>
+            <p><strong>Package:</strong> ${booking.serviceType} for ${booking.duration} hours</p>
+            <p><strong>When:</strong> ${booking.bookingDate} at ${booking.bookingTime}</p>
+            <br>
+            <a href="http://localhost:8000/admin" style="background: #C9A24A; color: #000; padding: 10px 20px; text-decoration: none; font-weight: bold; border-radius: 5px;">View in Admin Portal</a>
+          </div>
+        `
+      };
+
+      await transporter.sendMail(customerMailOptions);
+      await transporter.sendMail(adminMailOptions);
+      console.log('✓ Confirmation emails sent');
+    } catch (emailErr) {
+      console.error('Error sending emails:', emailErr);
+    }
+
     res.status(201).json(result);
   } catch (err) {
     console.error('Error creating booking:', err);
@@ -164,6 +238,12 @@ app.get('/api/bookings/all', async (req, res) => {
       return res.status(401).json({ error: 'Not authenticated' });
     }
 
+    // Basic Admin Check - CHANGE THIS TO YOUR LOGIN EMAIL
+    const isAdmin = req.user.email === 'gamaa.rental@gmail.com';
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
     const limit = req.query.limit ? parseInt(req.query.limit) : 100;
     const skip = req.query.skip ? parseInt(req.query.skip) : 0;
 
@@ -187,8 +267,11 @@ app.get('/api/bookings/:id', async (req, res) => {
       return res.status(404).json({ error: 'Booking not found' });
     }
 
-    // Check if user owns this booking
-    if (booking.userId !== req.user.sub) {
+    // Basic Admin Check - CHANGE THIS TO YOUR LOGIN EMAIL
+    const isAdmin = req.user.email === 'gamaa.rental@gmail.com';
+
+    // Check if user owns this booking OR is an admin
+    if (booking.userId !== req.user.sub && !isAdmin) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -211,12 +294,57 @@ app.put('/api/bookings/:id', async (req, res) => {
       return res.status(404).json({ error: 'Booking not found' });
     }
 
-    // Check if user owns this booking
-    if (booking.userId !== req.user.sub) {
+    // Basic Admin Check - CHANGE THIS TO YOUR LOGIN EMAIL
+    const isAdmin = req.user.email === 'gamaa.rental@gmail.com';
+
+    // Check if user owns this booking OR is an admin
+    if (booking.userId !== req.user.sub && !isAdmin) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
-    const updatedBooking = await cloudant.updateBooking(req.params.id, req.body);
+    // Security Check: Prevent users from modifying unauthorized fields or statuses
+    const updates = req.body;
+    if (!isAdmin) {
+      // Users can only cancel their bookings (cannot confirm/complete them)
+      if (updates.status && updates.status !== 'cancelled') {
+        return res.status(403).json({ error: 'Users can only cancel bookings' });
+      }
+      if (updates.status === 'cancelled' && booking.status !== 'pending') {
+        return res.status(400).json({ error: 'You can only cancel pending bookings' });
+      }
+    }
+
+    const updatedBooking = await cloudant.updateBooking(req.params.id, updates);
+
+    // --- Send Email on Confirmation ---
+    if (isAdmin && updates.status === 'confirmed' && booking.status !== 'confirmed') {
+      try {
+        const confirmedMailOptions = {
+          from: `"PS5 Luxe Rentals" <${process.env.EMAIL_USER}>`,
+          to: booking.email,
+          subject: '✅ Booking Confirmed! - PS5 Luxe Rentals',
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eee; border-radius: 10px;">
+              <h2 style="color: #27ae60;">Your Booking is Confirmed!</h2>
+              <p>Hi <strong>${booking.customerName}</strong>,</p>
+              <p>Great news! Your PS5 rental booking has been <strong>CONFIRMED</strong>.</p>
+              <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p><strong>Package:</strong> ${booking.serviceType}</p>
+                <p><strong>Delivery Date:</strong> ${booking.bookingDate} at ${booking.bookingTime}</p>
+                <p><strong>Duration:</strong> ${booking.duration} Hours</p>
+              </div>
+              <p>Get ready for some next-gen gaming. We will see you at the scheduled delivery time!</p>
+              <p>Best regards,<br><strong>PS5 Luxe Rentals Team</strong></p>
+            </div>
+          `
+        };
+        await transporter.sendMail(confirmedMailOptions);
+        console.log(`✓ Confirmation email sent to ${booking.email}`);
+      } catch (emailErr) {
+        console.error('Error sending confirmation email:', emailErr);
+      }
+    }
+
     res.json(updatedBooking);
   } catch (err) {
     console.error('Error updating booking:', err);

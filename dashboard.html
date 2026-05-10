@@ -56,6 +56,47 @@
             margin-bottom: 15px;
             border-radius: 5px;
         }
+        .badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        .badge.pending { background: #f39c12; color: #000; }
+        .badge.confirmed { background: #27ae60; color: #fff; }
+        .badge.completed { background: #2980b9; color: #fff; }
+        .badge.cancelled { background: #c0392b; color: #fff; }
+        /* Custom Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .custom-modal {
+            background: #1a1a2e;
+            border: 1px solid #ffd700;
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 400px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 25px;
+        }
+        .cancel-btn { background: #666; color: white; }
+        .cancel-btn:hover { background: #888; }
+        .confirm-btn { background: #c0392b; color: white; }
+        .confirm-btn:hover { background: #e74c3c; }
     </style>
 </head>
 <body>
@@ -91,6 +132,18 @@
         </div>
     </div>
 
+    <!-- Custom Confirm Modal -->
+    <div id="cancelModal" class="modal-overlay" style="display: none;">
+        <div class="custom-modal">
+            <h3 style="color: #ffd700; margin-top: 0;">Cancel Booking</h3>
+            <p>Are you sure you want to cancel this booking? This action cannot be undone.</p>
+            <div class="modal-buttons">
+                <button class="logout-btn cancel-btn" onclick="closeCancelModal()">No, Keep it</button>
+                <button class="logout-btn confirm-btn" onclick="executeCancel()">Yes, Cancel it</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         async function loadUserData() {
             try {
@@ -101,13 +154,86 @@
                 document.getElementById('welcomeName').textContent = `Welcome, ${user.name || 'User'}!`;
                 document.getElementById('userEmail').textContent = user.email || '';
                 document.getElementById('userName').textContent = user.name || 'User';
+                
+                // Add an 'Admin Portal' button if the logged-in user is the admin
+                if (user.email === 'gamaa.rental@gmail.com') {
+                    const btnContainer = document.querySelector('.user-info div[style*="display: flex"]');
+                    const adminBtn = document.createElement('a');
+                    adminBtn.href = '/admin';
+                    adminBtn.className = 'logout-btn';
+                    adminBtn.style.background = '#27ae60'; // Green color for visibility
+                    adminBtn.style.color = 'white';
+                    adminBtn.style.textDecoration = 'none';
+                    adminBtn.textContent = 'Admin Portal';
+                    btnContainer.prepend(adminBtn);
+                }
             } catch (error) {
                 console.error('Error loading user data:', error);
                 window.location.href = '/auth/login';
             }
         }
 
+        async function loadUserBookings() {
+            try {
+                const response = await fetch('/api/bookings');
+                if (!response.ok) return;
+                const bookings = await response.json();
+                const container = document.getElementById('bookingsContainer');
+                
+                if (bookings && bookings.length > 0) {
+                    // Sort bookings by newest created first (fallback to booking date)
+                    bookings.sort((a, b) => {
+                        const timeA = a.createdAt ? new Date(a.createdAt).getTime() : new Date(`${a.bookingDate}T${a.bookingTime}`).getTime();
+                        const timeB = b.createdAt ? new Date(b.createdAt).getTime() : new Date(`${b.bookingDate}T${b.bookingTime}`).getTime();
+                        return timeB - timeA;
+                    });
+
+                    container.innerHTML = bookings.map(b => `
+                        <div class="booking-item">
+                            <h4 style="margin: 0 0 10px 0; color: #fff;">${b.serviceType || 'PS5 Rental Package'}</h4>
+                            <p style="margin: 5px 0; color: #ccc;"><strong>Date:</strong> ${b.bookingDate} at ${b.bookingTime}</p>
+                            <p style="margin: 5px 0; color: #ccc;"><strong>Status:</strong> <span class="badge ${b.status || 'pending'}">${b.status || 'pending'}</span></p>
+                            <p style="margin: 5px 0; color: #ccc;"><strong>Duration:</strong> ${b.duration} hours</p>
+                            ${b.status === 'pending' ? `<button onclick="cancelBooking('${b._id}')" style="margin-top: 10px; background: #c0392b; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; text-transform: uppercase; font-weight: bold;">Cancel Booking</button>` : ''}
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading bookings:', error);
+            }
+        }
+
+        let currentCancelId = null;
+
+        function cancelBooking(id) {
+            currentCancelId = id;
+            document.getElementById('cancelModal').style.display = 'flex';
+        }
+
+        function closeCancelModal() {
+            currentCancelId = null;
+            document.getElementById('cancelModal').style.display = 'none';
+        }
+
+        async function executeCancel() {
+            if (!currentCancelId) return;
+            try {
+                const response = await fetch(`/api/bookings/${currentCancelId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'cancelled' })
+                });
+                if (!response.ok) throw new Error('Failed to cancel booking');
+                closeCancelModal();
+                loadUserBookings(); // Refresh the list
+            } catch (error) {
+                alert('Error: ' + error.message);
+                closeCancelModal();
+            }
+        }
+
         loadUserData();
+        loadUserBookings();
     </script>
 </body>
 </html>
